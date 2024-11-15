@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import readlineSync from 'readline-sync';
-
+//asdf
 class Player {
   constructor() {
     this.hp = 100; // 초기 체력
