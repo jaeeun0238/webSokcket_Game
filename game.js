@@ -8,7 +8,8 @@ class Player {
     this.attackPower = 10; // 초기 공격력
     this.stage = 1; // 초기 스테이지
     this.magicUses = 2; // 각 스테이지에서 사용할 수 있는 마법 횟수
-    
+    this.useDodge = 0;
+    this.counter = 5;
   }
 
   getAttackPower() {
@@ -38,7 +39,22 @@ class Player {
     }
   }
 
- 
+  usedodgeAndCounter(monster,player,stage) { // 회피에 성공하면 데미지를 받지않고 공격 실패하면 맞기만
+    const baseDamage = this.getAttackPower();
+    const dodgeChance = 0.5; //50%로 회피
+
+
+    const isDodge = Math.random() < dodgeChance;
+    if (isDodge) {
+      // 닷지가 성공했을때 플레이어가 데미지를 받지 않고 공격한다.
+      const damage = baseDamage;
+      monster.hp = Math.max(0, monster.hp - Math.floor(damage));
+    }
+    else {
+      monster.attack(player,stage);
+
+    }
+  }
 
   levelUp() {
     this.stage += 1;
@@ -95,7 +111,7 @@ const battle = async (stage, player) => {
   let logs = [];
 
   while (player.hp > 0 && monster.hp > 0) {
-    console.clear();
+    //console.clear();
     displayStatus(stage, player, monster);
 
     logs.forEach((log) => console.log(log));
@@ -155,6 +171,8 @@ const battle = async (stage, player) => {
 
       case '3':
         logs.push(chalk.blue("플레이어가 회피 후 타격을 시전합니다.")); // hp가 깎이지 않는다 - 회피
+        player.usedodgeAndCounter(monster,player,stage);
+
         // 회피 후 타격 로직 추가 가능
         break;
 
@@ -174,7 +192,7 @@ const battle = async (stage, player) => {
 };
 
 export async function startGame() {
-  console.clear();
+  //console.clear();
   let stage = 1;
   let player = new Player();
 
