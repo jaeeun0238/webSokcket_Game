@@ -5,8 +5,6 @@ class Player {
   constructor() {
     this.hp = 100; // 초기 체력
     this.maxHp = 100; // 최대 체력
-    this.mp = 100; // 초기 마법력
-    this.maxMp = 100; // 최대 마법력
     this.attackPower = 10; // 초기 공격력
     this.stage = 1; // 초기 스테이지
   }
@@ -32,7 +30,7 @@ class Player {
   levelUp() {
     this.stage += 1; // 스테이지 증가
     this.maxHp += 20; // 최대 체력 증가
-    this.hp = this.maxHp; // 체력을 최대값으로 회복
+    this.hp = this.maxHp; // 체력을 최대값으로 회복S
     this.attackPower += 5; // 공격력을 5 증가
   }
 
@@ -86,7 +84,7 @@ const battle = async (stage, player) => {
 
     console.log(
       chalk.green(
-        `\n1. 공격한다(일정확률로 크리티컬발생) 2. 주문을 외운다(크리티컬확률+30%). 3. 마법을 사용한다(공격력의 2배 공격)) 4. 회피공격을한다.(30%확률로 회피후 타격) `,
+        `\n1. 공격한다.(30%확률로 크리티컬) 2. 마법을 사용한다.(공격력의 2배 공격)) 3. 회피공격을한다.(30%확률로 회피후 타격) `,
       ),
     );
     const choice = readlineSync.question('당신의 선택은? ');
@@ -111,12 +109,9 @@ const battle = async (stage, player) => {
         break;
 
       case '2':
-        logs.push(chalk.blue("플레이어가 주문을 외웠습니다."));
-        //트리티컬 확률이 올라갔다는 로그 표시
-        break;
+        logs.push(chalk.blue("플레이어가 마법을 사용했습니다."));
       case '3':
-        logs.push(chalk.blue("플레이어가 마법을 사용하였습니다."));
-        console.log(`플레이어의 남은 마법 사용 횟수: `);
+        logs.push(chalk.blue("플레이어가 회피후 타격을 시전합니다."));
         break;
       case '4':
         logs.push(chalk.blue("플레이어가 회피후 타격을 시전합니다."));
