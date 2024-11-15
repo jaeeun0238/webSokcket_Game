@@ -1,32 +1,46 @@
 import chalk from 'chalk';
 import readlineSync from 'readline-sync';
-//asdfdadfasdfa
+
 class Player {
   constructor() {
     this.hp = 100; // 초기 체력
     this.maxHp = 100; // 최대 체력
-    this.mp = 100;
-    this.maxMp = 100;
-    this.baseAttackPower = 10; // 초기 공격력은 10으로 설정
+    this.mp = 100; // 초기 마법력
+    this.maxMp = 100; // 최대 마법력
+    this.attackPower = 10; // 초기 공격력
+    this.stage = 1; // 초기 스테이지
   }
 
-  getAttackPower(stage) {
-    const minAttackPower = Math.max(1, stage * 2 - 1); // 최소 공격력
-    const maxAttackPower = stage === 1 ? 10 : stage * 5; // 1스테이지에서 최대 공격력 10
-    return Math.floor(Math.random() * (maxAttackPower - minAttackPower + 1)) + minAttackPower; // 범위 내 랜덤 공격력 반환
+  getAttackPower() {
+    // 스테이지에 따라 공격력을 계산
+    return this.attackPower;
   }
 
-  attack(monster, stage) {
-    const damage = this.getAttackPower(stage); // 스테이지에 따라 공격력 계산
+  attack(monster) {
+    const baseDamage = this.getAttackPower(); // 현재 공격력 계산
+    const criticalChance = 0.3; // 크리티컬 확률 30%
+    const criticalMultiplier = 1.3; // 크리티컬 배수
+
+    // 랜덤 값 생성하여 크리티컬 여부 결정
+    const isCritical = Math.random() < criticalChance;
+    const damage = isCritical ? baseDamage * criticalMultiplier : baseDamage; // 크리티컬 히트 시 피해량 증가
+
     monster.hp -= damage; // 몬스터의 체력 감소
-    return damage; // 공격한 피해량 반환
+    return { damage, isCritical }; // 공격한 피해량과 크리티컬 여부 반환
   }
 
   levelUp() {
+    this.stage += 1; // 스테이지 증가
     this.maxHp += 20; // 최대 체력 증가
     this.hp = this.maxHp; // 체력을 최대값으로 회복
+    this.attackPower += 5; // 공격력을 5 증가
+  }
+
+  displayStatus() {
+    console.log(`Stage: ${this.stage}, Attack Power: ${this.attackPower}, HP: ${this.hp}/${this.maxHp}`);
   }
 }
+
 
 class Monster {
   constructor(stage) {
@@ -40,7 +54,7 @@ class Monster {
   }
 
   attack(player, stage) {
-    const damage = this.getAttackPower(stage); // 스테이지에 따라 공격력 계산
+    const damage = this.getAttackPower(stage)+5; // 스테이지에 따라 공격력 계산
     player.hp -= damage; // 플레이어의 체력 감소
     return damage; // 공격한 피해량 반환
   }
@@ -51,7 +65,7 @@ function displayStatus(stage, player, monster) {
   console.log(
     chalk.cyanBright(`| Stage: ${stage} `) +
     chalk.blueBright(
-      `| 플레이어 정보 (HP: ${player.hp}/${player.maxHp}, 기본 공격력: ${player.baseAttackPower})`,
+      `| 플레이어 정보 (HP: ${player.hp}/${player.maxHp}, 공격력: ${player.getAttackPower()})`,
     ) +
     chalk.redBright(
       `| 몬스터 정보 (HP: ${monster.hp}) |`,
@@ -65,14 +79,14 @@ const battle = async (stage, player) => {
   let logs = [];
 
   while (player.hp > 0 && monster.hp > 0) {
-    console.clear(); // 콘솔지우는 코드
+    console.clear(); // 콘솔 지우는 코드
     displayStatus(stage, player, monster);
 
     logs.forEach((log) => console.log(log));
 
     console.log(
       chalk.green(
-        `\n1. 공격한다 2. 아무것도 하지않는다. 3. 도망간다. 4. 회피한다. 5. 마법을 사용한다. `,
+        `\n1. 공격한다(일정확률로 크리티컬발생) 2. 주문을 외운다(크리티컬확률+30%). 3. 마법을 사용한다(공격력의 2배 공격)) 4. 회피공격을한다.(30%확률로 회피후 타격) `,
       ),
     );
     const choice = readlineSync.question('당신의 선택은? ');
@@ -81,8 +95,12 @@ const battle = async (stage, player) => {
 
     switch (choice) {
       case '1':
-        const damage = player.attack(monster, stage); // 몬스터에게 공격
-        logs.push(chalk.green(`플레이어가 몬스터에게 ${damage}의 피해를 주었습니다.`));
+        const { damage, isCritical } = player.attack(monster); // 몬스터에게 공격
+        if (isCritical) {
+          logs.push(chalk.green(`플레이어가 크리티컬 히트로 몬스터에게 ${damage}의 피해를 주었습니다.`));
+        } else {
+          logs.push(chalk.green(`플레이어가 몬스터에게 ${damage}의 피해를 주었습니다.`));
+        }
         console.log(`몬스터의 남은 체력: ${monster.hp}`);
 
         if (monster.hp > 0) {
@@ -93,21 +111,16 @@ const battle = async (stage, player) => {
         break;
 
       case '2':
-        logs.push(chalk.blue("플레이어가 아무것도 하지 않았습니다."));
+        logs.push(chalk.blue("플레이어가 주문을 외웠습니다."));
+        //트리티컬 확률이 올라갔다는 로그 표시
         break;
-        case '3':
-        logs.push(chalk.blue("플레이어가 도망쳤습니다."));
-        break;
-        case '4':
-        logs.push(chalk.blue("플레이어가 회피하였습니다."));
-        break;
-        case '5':
+      case '3':
         logs.push(chalk.blue("플레이어가 마법을 사용하였습니다."));
         console.log(`플레이어의 남은 마법 사용 횟수: `);
         break;
-
-
-
+      case '4':
+        logs.push(chalk.blue("플레이어가 회피후 타격을 시전합니다."));
+        break;
       default:
         logs.push(chalk.yellow("잘못된 선택입니다. 다시 선택해주세요."));
         break;
@@ -123,13 +136,12 @@ const battle = async (stage, player) => {
   return player.hp > 0; // 플레이어가 살아있으면 true 반환
 };
 
+
 export async function startGame() {
   console.clear();
   let stage = 1;
   let player = new Player();
-  //let player2 = new Player(); // 플레이어는 한 명만 생성
-  //console.log(player.hp,player2.hp);
-  
+
   while (true) { // 무한 루프
     const isAlive = await battle(stage, player);
 
