@@ -8,8 +8,6 @@ class Player {
     this.attackPower = 10; // 초기 공격력
     this.stage = 1; // 초기 스테이지
     this.magicUses = 2; // 각 스테이지에서 사용할 수 있는 마법 횟수
-    this.useDodge = 0;
-    this.counter = 5;
   }
 
   getAttackPower() {
@@ -39,20 +37,21 @@ class Player {
     }
   }
 
-  usedodgeAndCounter(monster, player, stage) { // 회피에 성공하면 데미지를 받지않고 공격 실패하면 맞기만
-    const baseDamage = this.getAttackPower();
+  usedodgeAndCounter(monster, stage, logs) { // 회피에 성공하면 데미지를 받지않고 공격 실패하면 맞기만
     const dodgeChance = 0.5; //50%로 회피
 
 
     const isDodge = Math.random() < dodgeChance;
     if (isDodge) {
       // 닷지가 성공했을때 플레이어가 데미지를 받지 않고 공격한다.
-      const damage = baseDamage;
-      monster.hp = Math.max(0, monster.hp - Math.floor(damage));
+      // const damage = baseDamage;
+      // monster.hp = Math.max(0, monster.hp - Math.floor(damage));
+      this.attack(monster);
+      logs.push("플레이어가 회피후 타격을 성공하였습니다");
     }
     else {
-      monster.attack(player, stage);
-
+      monster.attack(this, stage); // 내가플레이어니까 this
+      logs.push("플레이어가 회피에 실패하였습니다!");
     }
   }
 
@@ -170,21 +169,23 @@ const battle = async (stage, player) => {
         break;
 
       case '3':
-        const baseDamage = player.getAttackPower(); // 플레이어의 공격력
-        const dodgeChance = 0.5; // 50% 회피 확률
-        const isDodge = Math.random() < dodgeChance;
+        player.usedodgeAndCounter(monster, stage, logs);
+        
+        // const baseDamage = player.getAttackPower(); // 플레이어의 공격력
+        // const dodgeChance = 0.5; // 50% 회피 확률
+        // const isDodge = Math.random() < dodgeChance;
 
-        if (isDodge) {
-          // 회피 성공
-          logs.push(chalk.blue("플레이어가 회피 후 타격을 시전합니다.")); // 회피 성공 로그
-          //monster.hp = Math.max(0, monster.hp - Math.floor(baseDamage)); // 몬스터에게 데미지 적용
-          logs.push(chalk.green(`플레이어의 공격이 성공했습니다! 몬스터에게 ${Math.floor(baseDamage)}의 데미지를 입혔습니다.`)); // 공격 성공 로그
-        } else {
-          // 회피 실패
-          logs.push(chalk.red("플레이어가 회피에 실패했습니다!")); // 회피 실패 로그
-          monster.attack(player, stage); // 몬스터의 공격
-          logs.push(chalk.red(`몬스터의 공격으로 플레이어가 피해를 입었습니다!`)); // 몬스터 공격 로그
-        }
+        // if (isDodge) {
+        //   // 회피 성공
+        //   logs.push(chalk.blue("플레이어가 회피 후 타격을 시전합니다.")); // 회피 성공 로그
+        //   //monster.hp = Math.max(0, monster.hp - Math.floor(baseDamage)); // 몬스터에게 데미지 적용
+        //   logs.push(chalk.green(`플레이어의 공격이 성공했습니다! 몬스터에게 ${Math.floor(baseDamage)}의 데미지를 입혔습니다.`)); // 공격 성공 로그
+        // } else {
+        //   // 회피 실패
+        //   logs.push(chalk.red("플레이어가 회피에 실패했습니다!")); // 회피 실패 로그
+        //   monster.attack(player, stage); // 몬스터의 공격
+        //   logs.push(chalk.red(`몬스터의 공격으로 플레이어가 피해를 입었습니다!`)); // 몬스터 공격 로그
+        // }
         break;
 
       default:
