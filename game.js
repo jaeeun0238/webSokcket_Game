@@ -39,7 +39,7 @@ class Player {
     }
   }
 
-  usedodgeAndCounter(monster,player,stage) { // 회피에 성공하면 데미지를 받지않고 공격 실패하면 맞기만
+  usedodgeAndCounter(monster, player, stage) { // 회피에 성공하면 데미지를 받지않고 공격 실패하면 맞기만
     const baseDamage = this.getAttackPower();
     const dodgeChance = 0.5; //50%로 회피
 
@@ -51,7 +51,7 @@ class Player {
       monster.hp = Math.max(0, monster.hp - Math.floor(damage));
     }
     else {
-      monster.attack(player,stage);
+      monster.attack(player, stage);
 
     }
   }
@@ -111,7 +111,7 @@ const battle = async (stage, player) => {
   let logs = [];
 
   while (player.hp > 0 && monster.hp > 0) {
-    //console.clear();
+    console.clear();
     displayStatus(stage, player, monster);
 
     logs.forEach((log) => console.log(log));
@@ -170,15 +170,28 @@ const battle = async (stage, player) => {
         break;
 
       case '3':
-        logs.push(chalk.blue("플레이어가 회피 후 타격을 시전합니다.")); // hp가 깎이지 않는다 - 회피
-        player.usedodgeAndCounter(monster,player,stage);
+        const baseDamage = player.getAttackPower(); // 플레이어의 공격력
+        const dodgeChance = 0.5; // 50% 회피 확률
+        const isDodge = Math.random() < dodgeChance;
 
-        // 회피 후 타격 로직 추가 가능
+        if (isDodge) {
+          // 회피 성공
+          logs.push(chalk.blue("플레이어가 회피 후 타격을 시전합니다.")); // 회피 성공 로그
+          //monster.hp = Math.max(0, monster.hp - Math.floor(baseDamage)); // 몬스터에게 데미지 적용
+          logs.push(chalk.green(`플레이어의 공격이 성공했습니다! 몬스터에게 ${Math.floor(baseDamage)}의 데미지를 입혔습니다.`)); // 공격 성공 로그
+        } else {
+          // 회피 실패
+          logs.push(chalk.red("플레이어가 회피에 실패했습니다!")); // 회피 실패 로그
+          monster.attack(player, stage); // 몬스터의 공격
+          logs.push(chalk.red(`몬스터의 공격으로 플레이어가 피해를 입었습니다!`)); // 몬스터 공격 로그
+        }
         break;
 
       default:
         logs.push(chalk.yellow("잘못된 선택입니다. 다시 선택해주세요."));
         break;
+
+
     }
   }
 
@@ -192,7 +205,7 @@ const battle = async (stage, player) => {
 };
 
 export async function startGame() {
-  //console.clear();
+  console.clear();
   let stage = 1;
   let player = new Player();
 
