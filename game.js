@@ -127,6 +127,7 @@ const battle = async (stage, player) => {
     switch (choice) {
       case '1':
         const { damage, isCritical } = player.attack(monster);
+        // const { damage, isCritical } = { damage: 10, isCritical: true } 
         if (isCritical) {
           logs.push(chalk.green(`플레이어가 크리티컬 히트로 몬스터에게 ${damage}의 피해를 주었습니다.`));
         } else {
