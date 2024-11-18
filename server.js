@@ -44,7 +44,7 @@ function displayLobby() {
 
 // 유저 입력을 받아 처리하는 함수
 function handleUserInput() {
-    const choice = readlineSync.question('입력: ');
+    const choice = readlineSync.question('입력: '); //readlineSync를 써서 사용자의 입력을 기다린다는뜻
 
     switch (choice) {
         case '1':
