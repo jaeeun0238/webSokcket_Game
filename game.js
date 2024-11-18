@@ -47,11 +47,11 @@ class Player {
       // const damage = baseDamage;
       // monster.hp = Math.max(0, monster.hp - Math.floor(damage));
       this.attack(monster);
-      logs.push("플레이어가 회피후 타격을 성공하였습니다");
+      logs.push(chalk.green("플레이어가 회피후 타격을 성공하였습니다."));
     }
     else {
       monster.attack(this, stage); // 내가플레이어니까 this
-      logs.push("플레이어가 회피에 실패하였습니다!");
+      logs.push(chalk.red("플레이어가 회피에 실패하였습니다!"));
     }
   }
 
